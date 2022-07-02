@@ -15,6 +15,11 @@ struct _Endereco
 	char lixo[2];
 };
 
+int compara(const void *e1, const void *e2)
+{
+	return strncmp(((Endereco*)e1)->cep,((Endereco*)e2)->cep,8);
+}
+
 int main(int argc, char**argv)
 {
 		int num;
