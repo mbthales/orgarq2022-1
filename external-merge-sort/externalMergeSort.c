@@ -22,8 +22,19 @@ int compara(const void *e1, const void *e2)
 
 int main(int argc, char**argv)
 {
-		int num;
-    printf("Digite a quantidade de arquivos que voce deseja gerar para a ordenacao:\n");
-    scanf("%d", &num);
-    return 0;
+	FILE *f, *saida;
+	Endereco *e;
+	long posicao, qtd, bytesPorArquivo;
+
+	int num;
+	printf("Digite a quantidade de arquivos que voce deseja gerar para a ordenacao:\n");
+	scanf("%d", &num);
+
+	f = fopen("cep.dat","rb");
+	fseek(f,0,SEEK_END);
+	posicao = ftell(f);
+	qtd = posicao/sizeof(Endereco);
+	bytesPorArquivo = qtd/num;
+
+	fclose(f);
 }
