@@ -36,5 +36,25 @@ int main(int argc, char**argv)
 	qtd = posicao/sizeof(Endereco);
 	bytesPorArquivo = qtd/num;
 
+	for(int i = 1; i <= num; i++){
+		e = (Endereco*) malloc(bytesPorArquivo*sizeof(Endereco));
+		rewind(f);
+		if(fread(e,sizeof(Endereco),bytesPorArquivo,f) == bytesPorArquivo)
+		{
+			printf("Lido = OK\n");
+		}
+		qsort(e,bytesPorArquivo,sizeof(Endereco),compara);
+		printf("Ordenado = OK\n");
+		char nomeDoArquivo[50];
+		sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
+		saida = fopen(nomeDoArquivo, "wb");
+		fwrite(e,sizeof(Endereco),bytesPorArquivo,saida);
+		fclose(saida);
+		printf("Escrito = OK\n");
+		free(e);
+		
+		bytesPorArquivo = qtd-bytesPorArquivo;
+	}
+
 	fclose(f);
 }
