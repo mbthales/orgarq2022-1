@@ -20,6 +20,64 @@ int compara(const void *e1, const void *e2)
 	return strncmp(((Endereco*)e1)->cep,((Endereco*)e2)->cep,8);
 }
 
+void mergeFiles(int numOfFiles)
+{
+	FILE *a, *b, *hello;
+	Endereco ea, eb;
+	int aux = 1;
+
+	for(int i = 1; i <= numOfFiles/2; i++){
+		for(int j = 1; j <= numOfFiles/i; j+=2){
+			char arquivoA[50];
+			char arquivoB[50];
+			char arquivoSaida[50];
+			if(i == 1){
+				sprintf(arquivoA, "cep_ordenado_%d.dat", j);
+				sprintf(arquivoB, "cep_ordenado_%d.dat", j+1);
+			} else{
+				sprintf(arquivoA, "cep_saida_%d.dat", j);
+				sprintf(arquivoB, "cep_saida_%d.dat", j+1);
+			}
+			sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
+			a = fopen(arquivoA,"r");
+			b = fopen(arquivoB,"r");
+			hello = fopen(arquivoSaida,"w");
+
+			fread(&ea,sizeof(Endereco),1,a);
+			fread(&eb,sizeof(Endereco),1,b);
+
+			while(!feof(a) && !feof(b))
+			{
+				if(compara(&ea,&eb)<0)
+				{
+					fwrite(&ea,sizeof(Endereco),1,hello);
+					fread(&ea,sizeof(Endereco),1,a);
+				}
+				else
+				{
+					fwrite(&eb,sizeof(Endereco),1,hello);
+					fread(&eb,sizeof(Endereco),1,b);
+				}
+			}
+			while(!feof(a))
+			{
+				fwrite(&ea,sizeof(Endereco),1,hello);
+				fread(&ea,sizeof(Endereco),1,a);		
+			}
+			while(!feof(b))
+			{
+				fwrite(&eb,sizeof(Endereco),1,hello);
+				fread(&eb,sizeof(Endereco),1,b);		
+			}
+
+			fclose(a);
+			fclose(b);
+			fclose(hello);
+			aux++;
+		}
+	}
+}
+
 int main(int argc, char**argv)
 {
 	FILE *f, *saida;
@@ -74,4 +132,6 @@ int main(int argc, char**argv)
 	}
 
 	fclose(f);
+	mergeFiles(numOfFiles);
+	return 0;
 }
