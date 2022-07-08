@@ -24,36 +24,53 @@ int main(int argc, char**argv)
 {
 	FILE *f, *saida;
 	Endereco *e;
-	long posicao, qtd, bytesPorArquivo;
+	long posicao, qtd, metade;
+	int numOfFiles, aux = 0;
 
-	int num;
 	printf("Digite a quantidade de arquivos que voce deseja gerar para a ordenacao:\n");
-	scanf("%d", &num);
+	scanf("%d", &numOfFiles);
 
 	f = fopen("cep.dat","rb");
 	fseek(f,0,SEEK_END);
 	posicao = ftell(f);
 	qtd = posicao/sizeof(Endereco);
-	bytesPorArquivo = qtd/num;
+	metade = qtd/numOfFiles;
+	rewind(f);
 
-	for(int i = 1; i <= num; i++){
-		e = (Endereco*) malloc(bytesPorArquivo*sizeof(Endereco));
-		rewind(f);
-		if(fread(e,sizeof(Endereco),bytesPorArquivo,f) == bytesPorArquivo)
-		{
-			printf("Lido = OK\n");
+	for(int i = 1; i <= numOfFiles; i++)
+	{
+		if(i != numOfFiles){
+			e = (Endereco*) malloc((metade)*sizeof(Endereco));
+			if(fread(e,sizeof(Endereco),metade,f) == metade)
+			{
+				printf("Lido = OK\n");
+			}
+			qsort(e,metade,sizeof(Endereco),compara);
+			printf("Ordenado = OK\n");
+			char nomeDoArquivo[50];
+			sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
+			saida = fopen(nomeDoArquivo,"wb");
+			fwrite(e,sizeof(Endereco),metade,saida);
+			fclose(saida);
+			printf("Escrito = OK\n");
+			free(e);
+			aux += metade;
+		} else {
+			e = (Endereco*) malloc((qtd-aux)*sizeof(Endereco));
+			if(fread(e,sizeof(Endereco),qtd-aux,f) == qtd-aux)
+			{
+				printf("Lido = OK\n");
+			}
+			qsort(e,qtd-aux,sizeof(Endereco),compara);
+			printf("Ordenado = OK\n");
+			char nomeDoArquivo[50];
+			sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
+			saida = fopen(nomeDoArquivo,"wb");
+			fwrite(e,sizeof(Endereco),qtd-aux,saida);
+			fclose(saida);
+			printf("Escrito = OK\n");
+			free(e);
 		}
-		qsort(e,bytesPorArquivo,sizeof(Endereco),compara);
-		printf("Ordenado = OK\n");
-		char nomeDoArquivo[50];
-		sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
-		saida = fopen(nomeDoArquivo, "wb");
-		fwrite(e,sizeof(Endereco),bytesPorArquivo,saida);
-		fclose(saida);
-		printf("Escrito = OK\n");
-		free(e);
-		
-		bytesPorArquivo = qtd-bytesPorArquivo;
 	}
 
 	fclose(f);
