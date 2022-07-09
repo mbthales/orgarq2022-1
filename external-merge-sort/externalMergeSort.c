@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 typedef struct _Endereco Endereco;
 
@@ -25,20 +26,28 @@ void mergeFiles(int numOfFiles)
 	FILE *a, *b, *hello;
 	Endereco ea, eb;
 	int aux = 1;
+	int auxFile = 1;
 
-	for(int i = 1; i <= numOfFiles/2; i++){
-		for(int j = 1; j <= numOfFiles/i; j+=2){
+	for(int i = 1; i <= log2(numOfFiles); i++){
+		for(int j = 1; j <= numOfFiles/auxFile; j+=2){
+			printf("%d\n", numOfFiles/auxFile);
 			char arquivoA[50];
 			char arquivoB[50];
 			char arquivoSaida[50];
 			if(i == 1){
 				sprintf(arquivoA, "cep_ordenado_%d.dat", j);
 				sprintf(arquivoB, "cep_ordenado_%d.dat", j+1);
-			} else{
+			} else if (i == log2(numOfFiles)){
+				sprintf(arquivoA, "cep_saida_%d.dat", numOfFiles - 3);
+				sprintf(arquivoB, "cep_saida_%d.dat", numOfFiles - 2);
+			}
+			else{
 				sprintf(arquivoA, "cep_saida_%d.dat", j);
 				sprintf(arquivoB, "cep_saida_%d.dat", j+1);
 			}
+			
 			sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
+		
 			a = fopen(arquivoA,"r");
 			b = fopen(arquivoB,"r");
 			hello = fopen(arquivoSaida,"w");
@@ -75,6 +84,25 @@ void mergeFiles(int numOfFiles)
 			fclose(hello);
 			aux++;
 		}
+		
+		auxFile *= 2;
+	}
+}
+
+void excluirArquivos(int numOfFiles)
+{
+	char arquivo[50];
+
+	for(int i = 1; i <= numOfFiles; i++){
+		char arquivo[50];
+		sprintf(arquivo, "cep_ordenado_%d.dat", i);
+		remove(arquivo);
+	}
+
+	for(int i = 1; i <= numOfFiles - 2; i++){
+		char arquivo[50];
+		sprintf(arquivo, "cep_saida_%d.dat", i);
+		remove(arquivo);
 	}
 }
 
@@ -133,5 +161,6 @@ int main(int argc, char**argv)
 
 	fclose(f);
 	mergeFiles(numOfFiles);
+	excluirArquivos(numOfFiles);
 	return 0;
 }
