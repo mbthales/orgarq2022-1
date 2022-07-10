@@ -21,32 +21,38 @@ int compara(const void *e1, const void *e2)
 	return strncmp(((Endereco*)e1)->cep,((Endereco*)e2)->cep,8);
 }
 
-void mergeFiles(int numOfFiles)
+void intercalaArquivos(int numDeArqs)
 {
 	FILE *a, *b, *hello;
 	Endereco ea, eb;
 	int aux = 1;
 	int auxFile = 1;
 
-	for(int i = 1; i <= log2(numOfFiles); i++){
-		for(int j = 1; j <= numOfFiles/auxFile; j+=2){
-			printf("%d\n", numOfFiles/auxFile);
+	for(int i = 1; i <= log2(numDeArqs); i++){
+		for(int j = 1; j <= numDeArqs/auxFile; j+=2){
 			char arquivoA[50];
 			char arquivoB[50];
 			char arquivoSaida[50];
-			if(i == 1){
+			if(i == 1)
+			{
+				printf("Gerando Arquivo Intercalado - %d\n\n", aux);
 				sprintf(arquivoA, "cep_ordenado_%d.dat", j);
 				sprintf(arquivoB, "cep_ordenado_%d.dat", j+1);
-			} else if (i == log2(numOfFiles)){
-				sprintf(arquivoA, "cep_saida_%d.dat", numOfFiles - 3);
-				sprintf(arquivoB, "cep_saida_%d.dat", numOfFiles - 2);
+				sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
+			} else if (i == log2(numDeArqs))
+			{
+				printf("Gerando Arquivo Final Ordenado\n\n");
+				sprintf(arquivoA, "cep_saida_%d.dat", numDeArqs - 3);
+				sprintf(arquivoB, "cep_saida_%d.dat", numDeArqs - 2);
+				sprintf(arquivoSaida, "cep_ordenado.dat");
 			}
-			else{
+			else
+			{
+				printf("Gerando Arquivo Intercalado - %d\n\n", aux);
 				sprintf(arquivoA, "cep_saida_%d.dat", j);
 				sprintf(arquivoB, "cep_saida_%d.dat", j+1);
+				sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
 			}
-			
-			sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
 		
 			a = fopen(arquivoA,"r");
 			b = fopen(arquivoB,"r");
@@ -89,17 +95,19 @@ void mergeFiles(int numOfFiles)
 	}
 }
 
-void excluirArquivos(int numOfFiles)
+void excluirArquivos(int numDeArqs)
 {
 	char arquivo[50];
 
-	for(int i = 1; i <= numOfFiles; i++){
+	for(int i = 1; i <= numDeArqs; i++)
+	{
 		char arquivo[50];
 		sprintf(arquivo, "cep_ordenado_%d.dat", i);
 		remove(arquivo);
 	}
 
-	for(int i = 1; i <= numOfFiles - 2; i++){
+	for(int i = 1; i <= numDeArqs - 2; i++)
+	{
 		char arquivo[50];
 		sprintf(arquivo, "cep_saida_%d.dat", i);
 		remove(arquivo);
@@ -110,57 +118,49 @@ int main(int argc, char**argv)
 {
 	FILE *f, *saida;
 	Endereco *e;
-	long posicao, qtd, metade;
-	int numOfFiles, aux = 0;
+	long posicao, qtd, bytesPorArq;
+	int numDeArqs, aux;
 
 	printf("Digite a quantidade de arquivos que voce deseja gerar para a ordenacao:\n");
-	scanf("%d", &numOfFiles);
+	scanf("%d", &numDeArqs);
 
 	f = fopen("cep.dat","rb");
 	fseek(f,0,SEEK_END);
 	posicao = ftell(f);
 	qtd = posicao/sizeof(Endereco);
-	metade = qtd/numOfFiles;
+	bytesPorArq = qtd/numDeArqs;
 	rewind(f);
 
-	for(int i = 1; i <= numOfFiles; i++)
+	aux = 0;
+
+	for(int i = 1; i <= numDeArqs; i++)
 	{
-		if(i != numOfFiles){
-			e = (Endereco*) malloc((metade)*sizeof(Endereco));
-			if(fread(e,sizeof(Endereco),metade,f) == metade)
-			{
-				printf("Lido = OK\n");
-			}
-			qsort(e,metade,sizeof(Endereco),compara);
-			printf("Ordenado = OK\n");
-			char nomeDoArquivo[50];
-			sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
-			saida = fopen(nomeDoArquivo,"wb");
-			fwrite(e,sizeof(Endereco),metade,saida);
-			fclose(saida);
-			printf("Escrito = OK\n");
-			free(e);
-			aux += metade;
-		} else {
-			e = (Endereco*) malloc((qtd-aux)*sizeof(Endereco));
-			if(fread(e,sizeof(Endereco),qtd-aux,f) == qtd-aux)
-			{
-				printf("Lido = OK\n");
-			}
-			qsort(e,qtd-aux,sizeof(Endereco),compara);
-			printf("Ordenado = OK\n");
-			char nomeDoArquivo[50];
-			sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
-			saida = fopen(nomeDoArquivo,"wb");
-			fwrite(e,sizeof(Endereco),qtd-aux,saida);
-			fclose(saida);
-			printf("Escrito = OK\n");
-			free(e);
+		printf("Gerando Arquivo Ordenado - %d\n", i);
+
+		if(i == numDeArqs)
+		{
+			bytesPorArq = qtd-aux;
 		}
+
+		e = (Endereco*) malloc((bytesPorArq)*sizeof(Endereco));
+		if(fread(e,sizeof(Endereco),bytesPorArq,f) == bytesPorArq)
+		{
+			printf("Arquivo Ordenado %d = OK\n\n",i);
+		}
+		qsort(e,bytesPorArq,sizeof(Endereco),compara);
+		char nomeDoArquivo[50];
+		sprintf(nomeDoArquivo, "cep_ordenado_%d.dat", i);
+		saida = fopen(nomeDoArquivo,"wb");
+		fwrite(e,sizeof(Endereco),bytesPorArq,saida);
+		fclose(saida);
+		free(e);
+
+		aux += bytesPorArq;
 	}
 
 	fclose(f);
-	mergeFiles(numOfFiles);
-	excluirArquivos(numOfFiles);
+	intercalaArquivos(numDeArqs);
+	//excluirArquivos(numDeArqs);
+
 	return 0;
 }
