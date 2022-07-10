@@ -23,93 +23,87 @@ int compara(const void *e1, const void *e2)
 
 void intercalaArquivos(int numDeArqs)
 {
-	FILE *a, *b, *hello;
+	FILE *a, *b, *saida;
 	Endereco ea, eb;
-	int aux = 1;
-	int auxFile = 1;
+	char arquivoA[50];
+	char arquivoB[50];
+	char arquivoSaida[50];
 
-	for(int i = 1; i <= log2(numDeArqs); i++){
-		for(int j = 1; j <= numDeArqs/auxFile; j+=2){
-			char arquivoA[50];
-			char arquivoB[50];
-			char arquivoSaida[50];
-			if(i == 1)
+	int auxEntrada = 1;
+	int auxSaida = 1;
+
+	for(int i = 1; i <= (numDeArqs*2) - 3; i+=2){
+		if(i <= numDeArqs){
+			sprintf(arquivoA, "cep_ordenado_%d.dat", i);
+			sprintf(arquivoB, "cep_ordenado_%d.dat", i+1);
+		} else {
+			sprintf(arquivoA, "cep_intercalado_%d.dat", auxEntrada);
+			sprintf(arquivoB, "cep_intercalado_%d.dat", auxEntrada+1);
+			auxEntrada+=2;
+		}
+
+		if(i == (numDeArqs*2) - 3){
+			printf("Gerando Arquivo Ordenado Final\n\n");
+			sprintf(arquivoSaida, "cep_ordenado.dat");
+		} else {
+			printf("Gerando Arquivo Intercalado - %d\n\n", auxSaida);
+			sprintf(arquivoSaida, "cep_intercalado_%d.dat", auxSaida);
+		}
+
+		a = fopen(arquivoA,"rb");
+		b = fopen(arquivoB,"rb");
+		saida = fopen(arquivoSaida,"wb");
+
+		fread(&ea,sizeof(Endereco),1,a);
+		fread(&eb,sizeof(Endereco),1,b);
+
+		while(!feof(a) && !feof(b))
+		{
+			if(compara(&ea,&eb)<0)
 			{
-				printf("Gerando Arquivo Intercalado - %d\n\n", aux);
-				sprintf(arquivoA, "cep_ordenado_%d.dat", j);
-				sprintf(arquivoB, "cep_ordenado_%d.dat", j+1);
-				sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
-			} else if (i == log2(numDeArqs))
-			{
-				printf("Gerando Arquivo Final Ordenado\n\n");
-				sprintf(arquivoA, "cep_saida_%d.dat", numDeArqs - 3);
-				sprintf(arquivoB, "cep_saida_%d.dat", numDeArqs - 2);
-				sprintf(arquivoSaida, "cep_ordenado.dat");
+				fwrite(&ea,sizeof(Endereco),1,saida);
+				fread(&ea,sizeof(Endereco),1,a);
 			}
 			else
 			{
-				printf("Gerando Arquivo Intercalado - %d\n\n", aux);
-				sprintf(arquivoA, "cep_saida_%d.dat", j);
-				sprintf(arquivoB, "cep_saida_%d.dat", j+1);
-				sprintf(arquivoSaida, "cep_saida_%d.dat", aux);
+				fwrite(&eb,sizeof(Endereco),1,saida);
+				fread(&eb,sizeof(Endereco),1,b);
 			}
-		
-			a = fopen(arquivoA,"r");
-			b = fopen(arquivoB,"r");
-			hello = fopen(arquivoSaida,"w");
-
-			fread(&ea,sizeof(Endereco),1,a);
-			fread(&eb,sizeof(Endereco),1,b);
-
-			while(!feof(a) && !feof(b))
-			{
-				if(compara(&ea,&eb)<0)
-				{
-					fwrite(&ea,sizeof(Endereco),1,hello);
-					fread(&ea,sizeof(Endereco),1,a);
-				}
-				else
-				{
-					fwrite(&eb,sizeof(Endereco),1,hello);
-					fread(&eb,sizeof(Endereco),1,b);
-				}
-			}
-			while(!feof(a))
-			{
-				fwrite(&ea,sizeof(Endereco),1,hello);
-				fread(&ea,sizeof(Endereco),1,a);		
-			}
-			while(!feof(b))
-			{
-				fwrite(&eb,sizeof(Endereco),1,hello);
-				fread(&eb,sizeof(Endereco),1,b);		
-			}
-
-			fclose(a);
-			fclose(b);
-			fclose(hello);
-			aux++;
 		}
-		
-		auxFile *= 2;
+
+		while(!feof(a))
+		{
+			fwrite(&ea,sizeof(Endereco),1,saida);
+			fread(&ea,sizeof(Endereco),1,a);		
+		}
+		while(!feof(b))
+		{
+			fwrite(&eb,sizeof(Endereco),1,saida);
+			fread(&eb,sizeof(Endereco),1,b);		
+		}
+
+		fclose(a);
+		fclose(b);
+		fclose(saida);
+		auxSaida++;
 	}
 }
 
-void excluirArquivos(int numDeArqs)
+void excluaArquivos(int numDeArqs)
 {
 	char arquivo[50];
 
 	for(int i = 1; i <= numDeArqs; i++)
 	{
-		char arquivo[50];
+		printf("Apagando Arquivo Ordenado - %d\n\n", i);
 		sprintf(arquivo, "cep_ordenado_%d.dat", i);
 		remove(arquivo);
 	}
 
 	for(int i = 1; i <= numDeArqs - 2; i++)
 	{
-		char arquivo[50];
-		sprintf(arquivo, "cep_saida_%d.dat", i);
+		printf("Apagando Arquivo Intercalado - %d\n\n", i);
+		sprintf(arquivo, "cep_intercalado_%d.dat", i);
 		remove(arquivo);
 	}
 }
@@ -160,7 +154,9 @@ int main(int argc, char**argv)
 
 	fclose(f);
 	intercalaArquivos(numDeArqs);
-	//excluirArquivos(numDeArqs);
+	excluaArquivos(numDeArqs);
+
+	printf("O programa gerou um arquivo ordenado com sucesso!\n");
 
 	return 0;
 }
