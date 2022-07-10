@@ -32,20 +32,25 @@ void intercalaArquivos(int numDeArqs)
 	int auxEntrada = 1;
 	int auxSaida = 1;
 
-	for(int i = 1; i <= (numDeArqs*2) - 3; i+=2){
-		if(i <= numDeArqs){
+	for(int i = 1; i <= (numDeArqs*2) - 3; i+=2)
+	{
+		if(i <= numDeArqs)
+		{
 			sprintf(arquivoA, "cep_ordenado_%d.dat", i);
 			sprintf(arquivoB, "cep_ordenado_%d.dat", i+1);
-		} else {
+		} else
+		{
 			sprintf(arquivoA, "cep_intercalado_%d.dat", auxEntrada);
 			sprintf(arquivoB, "cep_intercalado_%d.dat", auxEntrada+1);
 			auxEntrada+=2;
 		}
 
-		if(i == (numDeArqs*2) - 3){
+		if(i == (numDeArqs*2) - 3)
+		{
 			printf("Gerando Arquivo Ordenado Final\n\n");
 			sprintf(arquivoSaida, "cep_ordenado.dat");
-		} else {
+		} else
+		{
 			printf("Gerando Arquivo Intercalado - %d\n\n", auxSaida);
 			sprintf(arquivoSaida, "cep_intercalado_%d.dat", auxSaida);
 		}
